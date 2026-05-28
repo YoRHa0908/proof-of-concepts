@@ -10,17 +10,7 @@ body {
   color: #0f172a;
 }
 
-
-/* Chat improvements */
-.chat-message {
-  transition: all 0.2s ease;
-}
-
-.chat-message:hover {
-  transform: translateY(-1px);
-}
-
-/* Smooth scrolling for chat */
+/* Simple chat improvements */
 .overflow-y-auto {
   scroll-behavior: smooth;
 }
@@ -42,87 +32,4 @@ body {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-
-/* Sophisticated chat improvements */
-.chat-message {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: messageAppear 0.3s ease-out;
-}
-
-@keyframes messageAppear {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Enhanced scrollbar */
-.overflow-y-auto {
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
-.overflow-y-auto::-webkit-scrollbar {
-  width: 8px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
-  border-radius: 4px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #94a3b8, #64748b);
-  border-radius: 4px;
-  border: 2px solid #f1f5f9;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #64748b, #475569);
-}
-
-/* Gradient borders */
-.gradient-border {
-  position: relative;
-  border: double 2px transparent;
-  background-image: linear-gradient(white, white), 
-                    linear-gradient(to right, #0ea5e9, #3b82f6);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-}
-
-/* Pulse animation for interactive elements */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
-  }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s infinite;
-}
-
-/* Smooth transitions */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-/* Glass morphism effect */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
