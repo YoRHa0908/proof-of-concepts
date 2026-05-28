@@ -1,6 +1,6 @@
-import { Language } from "./types";
+import { Language, UI } from "./types";
 
-export const ui = {
+export const ui: Record<Language, UI> = {
   en: {
     badge: "Proof-of-concept demo",
     headline: "A bilingual admissions chat experience for Kingsway Academy",
@@ -22,7 +22,7 @@ export const ui = {
     namePlaceholder: "Enter your full name",
     emailPlaceholder: "your.email@example.com",
     interestPlaceholder: "Tell us what you're interested in...",
-    features: ["Bilingual FAQ", "Lead Capture", "CSV Export"],
+
   },
   es: {
     badge: "Demo de prueba",
@@ -45,7 +45,7 @@ export const ui = {
     namePlaceholder: "Ingrese su nombre completo",
     emailPlaceholder: "tu.correo@ejemplo.com",
     interestPlaceholder: "Cuéntenos qué le interesa...",
-    features: ["FAQ Bilingüe", "Captura de Contactos", "Exportar CSV"],
+
   },
 };
 

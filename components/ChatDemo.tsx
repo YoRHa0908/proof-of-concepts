@@ -120,12 +120,20 @@ export default function ChatDemo() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            {text.features.map((item) => (
-              <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
-                <CheckCircle2 className="mb-3 text-cyan-400" size={20} />
-                <span className="font-medium">{item}</span>
-              </div>
-            ))}
+            {language === "en" 
+              ? ["Bilingual FAQ", "Lead Capture", "CSV Export"].map((item) => (
+                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
+                    <CheckCircle2 className="mb-3 text-cyan-400" size={20} />
+                    <span className="font-medium">{item}</span>
+                  </div>
+                ))
+              : ["FAQ Bilingüe", "Captura de Contactos", "Exportar CSV"].map((item) => (
+                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
+                    <CheckCircle2 className="mb-3 text-cyan-400" size={20} />
+                    <span className="font-medium">{item}</span>
+                  </div>
+                ))
+            }
           </div>
         </div>
 
