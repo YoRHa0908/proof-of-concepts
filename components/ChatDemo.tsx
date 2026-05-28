@@ -1,10 +1,10 @@
 "use client";
 
 import { FormEvent, useMemo, useState, useRef, useEffect } from "react";
-import { ArrowRight, Bot, CheckCircle2, Globe2, MessageCircle, Send, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, Bot, CheckCircle2, Download, Globe2, MessageCircle, Send, ShieldCheck, UserRound, Users, X } from "lucide-react";
 import { faqs, getAnswer, ui } from "@/lib/content";
-import { addLead } from "@/lib/storage";
-import { Language, Message } from "@/lib/types";
+import { addLead, readLeads, toCsv } from "@/lib/storage";
+import { Language, Message, Lead } from "@/lib/types";
 
 function id() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -22,7 +22,17 @@ export default function ChatDemo() {
       text: "Welcome. I can help with admissions, programs, tuition, and contact questions.",
     },
   ]);
+  const [showLeads, setShowLeads] = useState(false);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Load leads from storage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedLeads = readLeads();
+      setLeads(storedLeads);
+    }
+  }, []);
 
   const text = ui[language];
 
@@ -47,17 +57,51 @@ export default function ChatDemo() {
     event.preventDefault();
     if (!lead.name.trim() || !lead.email.trim()) return;
 
-    addLead({
+    const newLead = {
       id: id(),
       name: lead.name.trim(),
       email: lead.email.trim(),
       interest: lead.interest.trim() || "General inquiry",
       language,
       createdAt: new Date().toISOString(),
-    });
+    };
 
+    addLead(newLead);
+    setLeads(prev => [newLead, ...prev]);
     setLead({ name: "", email: "", interest: "" });
     setMessages((current) => [...current, { id: id(), role: "assistant", text: text.saved }]);
+  }
+
+  function exportToCsv() {
+    if (leads.length === 0) {
+      setMessages((current) => [...current, { 
+        id: id(), 
+        role: "assistant", 
+        text: language === "en" 
+          ? "No leads to export yet. Submit a lead first." 
+          : "No hay contactos para exportar. Envíe un contacto primero."
+      }]);
+      return;
+    }
+
+    const csv = toCsv(leads);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kingsway-leads-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setMessages((current) => [...current, { 
+      id: id(), 
+      role: "assistant", 
+      text: language === "en" 
+        ? `Exported ${leads.length} leads to CSV file.` 
+        : `Exportados ${leads.length} contactos a archivo CSV.`
+    }]);
   }
 
   function clearChat() {
@@ -121,17 +165,65 @@ export default function ChatDemo() {
 
           <div className="grid gap-3 sm:grid-cols-3">
             {language === "en" 
-              ? ["Bilingual FAQ", "Lead Capture", "CSV Export"].map((item) => (
-                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
-                    <CheckCircle2 className="mb-3 text-cyan-400" size={20} />
-                    <span className="font-medium">{item}</span>
-                  </div>
+              ? [
+                  { 
+                    label: "Bilingual FAQ", 
+                    description: "Auto-answers common questions",
+                    icon: <CheckCircle2 className="mb-3 text-cyan-400" size={20} />,
+                    onClick: () => {}
+                  },
+                  { 
+                    label: "Lead Capture", 
+                    description: `Save inquiries for follow-up (${leads.length} captured)`,
+                    icon: <Users className="mb-3 text-emerald-400" size={20} />,
+                    onClick: () => setShowLeads(true)
+                  },
+                  { 
+                    label: "CSV Export", 
+                    description: "Download data as spreadsheet",
+                    icon: <Download className="mb-3 text-amber-400" size={20} />,
+                    onClick: exportToCsv
+                  }
+                ].map((item) => (
+                  <button 
+                    key={item.label} 
+                    onClick={item.onClick}
+                    className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm text-left transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-sm active:scale-95"
+                  >
+                    {item.icon}
+                    <span className="font-medium block">{item.label}</span>
+                    <span className="text-xs text-slate-400 mt-1 block">{item.description}</span>
+                  </button>
                 ))
-              : ["FAQ Bilingüe", "Captura de Contactos", "Exportar CSV"].map((item) => (
-                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
-                    <CheckCircle2 className="mb-3 text-cyan-400" size={20} />
-                    <span className="font-medium">{item}</span>
-                  </div>
+              : [
+                  { 
+                    label: "FAQ Bilingüe", 
+                    description: "Responde preguntas comunes",
+                    icon: <CheckCircle2 className="mb-3 text-cyan-400" size={20} />,
+                    onClick: () => {}
+                  },
+                  { 
+                    label: "Captura de Contactos", 
+                    description: `Guarda consultas para seguimiento (${leads.length} capturados)`,
+                    icon: <Users className="mb-3 text-emerald-400" size={20} />,
+                    onClick: () => setShowLeads(true)
+                  },
+                  { 
+                    label: "Exportar CSV", 
+                    description: "Descarga datos como hoja de cálculo",
+                    icon: <Download className="mb-3 text-amber-400" size={20} />,
+                    onClick: exportToCsv
+                  }
+                ].map((item) => (
+                  <button 
+                    key={item.label} 
+                    onClick={item.onClick}
+                    className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm text-left transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-sm active:scale-95"
+                  >
+                    {item.icon}
+                    <span className="font-medium block">{item.label}</span>
+                    <span className="text-xs text-slate-400 mt-1 block">{item.description}</span>
+                  </button>
                 ))
             }
           </div>
@@ -306,6 +398,84 @@ export default function ChatDemo() {
           </div>
         </div>
       </section>
+
+      {/* Leads Modal */}
+      {showLeads && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700/50 shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-700/50 p-5">
+              <div>
+                <h3 className="text-xl font-bold text-white">
+                  {language === "en" ? "Captured Leads" : "Contactos Capturados"}
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">
+                  {language === "en" 
+                    ? `${leads.length} leads saved in browser storage` 
+                    : `${leads.length} contactos guardados en almacenamiento del navegador`}
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowLeads(false)}
+                className="rounded-lg border border-slate-700 bg-slate-800/50 p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto max-h-[60vh]">
+              {leads.length === 0 ? (
+                <div className="text-center py-10">
+                  <Users className="mx-auto h-12 w-12 text-slate-600 mb-3" />
+                  <p className="text-slate-400">
+                    {language === "en" 
+                      ? "No leads captured yet. Submit a lead using the form on the right." 
+                      : "No hay contactos capturados aún. Envíe un contacto usando el formulario a la derecha."}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {leads.map((lead) => (
+                    <div key={lead.id} className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-white">{lead.name}</h4>
+                          <p className="text-sm text-slate-400 mt-1">{lead.email}</p>
+                          <p className="text-sm text-slate-300 mt-2">{lead.interest}</p>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs px-2 py-1 rounded-full bg-slate-700/50 text-slate-300">
+                            {lead.language === "en" ? "English" : "Español"}
+                          </span>
+                          <span className="text-xs text-slate-500 mt-2">
+                            {new Date(lead.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-slate-700/50 p-4 flex justify-between items-center">
+              <button
+                onClick={exportToCsv}
+                disabled={leads.length === 0}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-2 text-sm font-medium text-white transition-all hover:from-amber-700 hover:to-amber-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download size={16} />
+                {language === "en" ? "Export to CSV" : "Exportar a CSV"}
+              </button>
+              <button
+                onClick={() => setShowLeads(false)}
+                className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
+              >
+                {language === "en" ? "Close" : "Cerrar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
