@@ -8,7 +8,7 @@
   padding: 0;
 }
 
-html, body {
+html, body, #__next {
   height: 100%;
   overflow: hidden;
 }
@@ -21,66 +21,75 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure main container doesn't scroll */
-#__next, .min-h-screen, .h-screen {
+/* MAIN PAGE - NO SCROLLING */
+.h-screen {
   height: 100vh;
   overflow: hidden;
 }
 
-/* Chat container scrollbar (only appears when needed) */
-.overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: #94a3b8 #f1f5f9;
+.h-full {
+  height: 100%;
+}
+
+/* CHAT CONTAINER STRUCTURE */
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.min-h-0 {
+  min-height: 0;
+}
+
+/* MESSAGE AREA - SCROLLS HERE */
+.flex-1.min-h-0.overflow-hidden {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.h-full.overflow-y-auto.chat-scroll-area {
+  height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
+/* Custom scrollbar for chat */
+.chat-scroll-area::-webkit-scrollbar {
+  width: 8px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
+.chat-scroll-area::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 4px;
+  margin: 4px 0;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+.chat-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.7);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.chat-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
 }
 
-/* Hide scrollbar when not hovering over chat */
-.chat-scroll-container {
-  overflow-y: hidden;
+/* Message styling */
+.max-w-\[82\%\] {
+  max-width: 82%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
-.chat-scroll-container:hover {
-  overflow-y: auto;
-}
-
-/* Smooth transitions */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-/* Glass morphism effect */
-.backdrop-blur-sm {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Gradient text */
-.bg-clip-text {
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-/* Message animation (subtle, not causing jumps) */
+/* Message animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -96,23 +105,31 @@ body {
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Focus styles */
-.focus\:ring-2:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+/* Quick Questions - FIXED (no scrolling) */
+.flex-wrap.gap-2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-/* Custom max-width for wider layout */
+/* Glass morphism and other effects */
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Custom max-width */
 .max-w-8xl {
   max-width: 96rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .overflow-y-auto {
-    scrollbar-width: none;
-  }
-  
-  .overflow-y-auto::-webkit-scrollbar {
-    display: none;
-  }
 }

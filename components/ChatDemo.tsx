@@ -72,10 +72,17 @@ export default function ChatDemo() {
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    if (chatContainerRef.current) {
-      const container = chatContainerRef.current;
+    if (!chatContainerRef.current) return;
+    
+    const container = chatContainerRef.current;
+    
+    // Always scroll to bottom when new messages are added
+    // This ensures chat stays readable as messages accumulate
+    const scrollTimer = setTimeout(() => {
       container.scrollTop = container.scrollHeight;
-    }
+    }, 50);
+    
+    return () => clearTimeout(scrollTimer);
   }, [messages]);
 
   return (
@@ -125,7 +132,8 @@ export default function ChatDemo() {
         <div className="rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-5 shadow-2xl shadow-blue-900/10 backdrop-blur-sm h-[90vh] max-h-[800px]">
           <div className="grid gap-5 rounded-2xl bg-gradient-to-br from-slate-50 to-white p-5 text-slate-900 h-full md:grid-cols-[1.25fr_0.75fr]">
             <section className="flex flex-col rounded-xl bg-white shadow-lg border border-slate-200/50 h-full">
-              <header className="flex items-center justify-between border-b border-slate-200/50 bg-gradient-to-r from-blue-50/50 to-white p-4">
+              {/* HEADER - FIXED */}
+              <header className="flex items-center justify-between border-b border-slate-200/50 bg-gradient-to-r from-blue-50/50 to-white p-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-sm">
                     <Bot size={20} />
@@ -158,10 +166,11 @@ export default function ChatDemo() {
                 </div>
               </header>
 
-              <div className="flex-1 overflow-hidden flex flex-col">
+              {/* MESSAGE AREA - SCROLLS HERE */}
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <div 
                   ref={chatContainerRef}
-                  className="flex-1 overflow-y-auto p-4 space-y-3"
+                  className="h-full overflow-y-auto p-4 space-y-3 chat-scroll-area"
                 >
                   {messages.map((message, index) => (
                     <div 
@@ -189,7 +198,8 @@ export default function ChatDemo() {
                 </div>
               </div>
 
-              <div className="border-t border-slate-200/50 bg-gradient-to-t from-white to-slate-50/50 p-4">
+              {/* QUICK QUESTIONS & INPUT - FIXED */}
+              <div className="border-t border-slate-200/50 bg-gradient-to-t from-white to-slate-50/50 p-4 flex-shrink-0">
                 <div className="mb-3">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Quick Questions</p>
                   <div className="flex flex-wrap gap-2">
