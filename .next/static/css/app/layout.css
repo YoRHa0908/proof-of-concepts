@@ -677,6 +677,9 @@ video {
 .max-w-xl {
   max-width: 36rem;
 }
+.max-w-\[82\%\] {
+  max-width: 82%;
+}
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1385,6 +1388,10 @@ body {
     grid-template-columns: 1.3fr 0.7fr;
   }
 
+  .md\:grid-cols-\[1\.25fr_0\.75fr\] {
+    grid-template-columns: 1.25fr 0.75fr;
+  }
+
   .md\:flex-row {
     flex-direction: row;
   }
@@ -1406,6 +1413,10 @@ body {
 
   .lg\:grid-cols-\[1fr_1\.3fr\] {
     grid-template-columns: 1fr 1.3fr;
+  }
+
+  .lg\:grid-cols-\[1fr_1\.35fr\] {
+    grid-template-columns: 1fr 1.35fr;
   }
 
   .lg\:px-8 {

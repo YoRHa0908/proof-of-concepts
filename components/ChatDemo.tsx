@@ -80,7 +80,7 @@ export default function ChatDemo() {
 
   return (
     <main className="h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      <section className="h-full mx-auto grid max-w-8xl items-center gap-8 px-6 py-8 lg:grid-cols-[1fr_1.3fr] lg:px-8">
+      <section className="h-full mx-auto grid max-w-8xl items-center gap-8 px-6 py-8 lg:grid-cols-[1fr_1.35fr] lg:px-8">
         <div className="space-y-8 pl-2">
           <div className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm text-slate-200 backdrop-blur-sm">
             <ShieldCheck size={18} />
@@ -123,7 +123,7 @@ export default function ChatDemo() {
         </div>
 
         <div className="rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-5 shadow-2xl shadow-blue-900/10 backdrop-blur-sm h-[90vh] max-h-[800px]">
-          <div className="grid gap-5 rounded-2xl bg-gradient-to-br from-slate-50 to-white p-5 text-slate-900 h-full md:grid-cols-[1.3fr_0.7fr]">
+          <div className="grid gap-5 rounded-2xl bg-gradient-to-br from-slate-50 to-white p-5 text-slate-900 h-full md:grid-cols-[1.25fr_0.75fr]">
             <section className="flex flex-col rounded-xl bg-white shadow-lg border border-slate-200/50 h-full">
               <header className="flex items-center justify-between border-b border-slate-200/50 bg-gradient-to-r from-blue-50/50 to-white p-4">
                 <div className="flex items-center gap-3">
@@ -175,7 +175,7 @@ export default function ChatDemo() {
                         </div>
                       )}
 
-                      <div className={`max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed shadow-sm ${message.role === "user" ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" : "bg-gradient-to-r from-slate-50 to-white text-slate-800 border border-slate-200/50"}`}>
+                      <div className={`max-w-[82%] rounded-xl px-4 py-3 text-sm leading-relaxed shadow-sm ${message.role === "user" ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" : "bg-gradient-to-r from-slate-50 to-white text-slate-800 border border-slate-200/50"}`}>
                         {message.text}
                       </div>
 
