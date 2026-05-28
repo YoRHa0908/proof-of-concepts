@@ -120,7 +120,7 @@ export default function ChatDemo() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            {["Bilingual FAQ", "Lead Capture", "CSV Export"].map((item) => (
+            {text.features.map((item) => (
               <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
                 <CheckCircle2 className="mb-3 text-cyan-400" size={20} />
                 <span className="font-medium">{item}</span>
@@ -151,13 +151,13 @@ export default function ChatDemo() {
                   <button
                     onClick={clearChat}
                     className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:border-red-400 hover:bg-red-50 hover:text-red-700 hover:shadow-sm"
-                    title="Clear chat history"
+                    title={text.clearChat}
                   >
                     <span className="flex items-center gap-1">
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
-                      Clear
+                      {text.clear}
                     </span>
                   </button>
                   <div className="h-8 w-8 rounded-lg bg-blue-100 grid place-items-center text-blue-600">
@@ -201,7 +201,7 @@ export default function ChatDemo() {
               {/* QUICK QUESTIONS & INPUT - FIXED */}
               <div className="border-t border-slate-200/50 bg-gradient-to-t from-white to-slate-50/50 p-4 flex-shrink-0">
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Quick Questions</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{text.quickQuestions}</p>
                   <div className="flex flex-wrap gap-2">
                     {quickQuestions.map((question) => (
                       <button 
@@ -257,7 +257,7 @@ export default function ChatDemo() {
                   <input
                     value={lead.name}
                     onChange={(event) => setLead({ ...lead, name: event.target.value })}
-                    placeholder="Enter your full name"
+                    placeholder={text.namePlaceholder}
                     className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
@@ -266,7 +266,7 @@ export default function ChatDemo() {
                   <input
                     value={lead.email}
                     onChange={(event) => setLead({ ...lead, email: event.target.value })}
-                    placeholder="your.email@example.com"
+                    placeholder={text.emailPlaceholder}
                     type="email"
                     className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />
@@ -276,7 +276,7 @@ export default function ChatDemo() {
                   <textarea
                     value={lead.interest}
                     onChange={(event) => setLead({ ...lead, interest: event.target.value })}
-                    placeholder="Tell us what you're interested in..."
+                    placeholder={text.interestPlaceholder}
                     rows={3}
                     className="w-full h-full resize-none rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   />

@@ -16,6 +16,13 @@ export const ui = {
     submit: "Save inquiry",
     saved: "Inquiry saved. The admissions team can review it in the admin page.",
     adminLink: "Open admin dashboard",
+    quickQuestions: "Quick Questions",
+    clear: "Clear",
+    clearChat: "Clear chat history",
+    namePlaceholder: "Enter your full name",
+    emailPlaceholder: "your.email@example.com",
+    interestPlaceholder: "Tell us what you're interested in...",
+    features: ["Bilingual FAQ", "Lead Capture", "CSV Export"],
   },
   es: {
     badge: "Demo de prueba",
@@ -32,6 +39,13 @@ export const ui = {
     submit: "Guardar consulta",
     saved: "Consulta guardada. El equipo de admisiones puede verla en el panel admin.",
     adminLink: "Abrir panel admin",
+    quickQuestions: "Preguntas Rápidas",
+    clear: "Limpiar",
+    clearChat: "Limpiar historial de chat",
+    namePlaceholder: "Ingrese su nombre completo",
+    emailPlaceholder: "tu.correo@ejemplo.com",
+    interestPlaceholder: "Cuéntenos qué le interesa...",
+    features: ["FAQ Bilingüe", "Captura de Contactos", "Exportar CSV"],
   },
 };
 
