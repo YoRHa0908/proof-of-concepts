@@ -1,9 +1,13 @@
-export type Language = "en" | "es";
+﻿export type Language = "en" | "es";
 
 export type Message = {
   id: string;
   role: "assistant" | "user";
-  text: string;
+  /** Message content with translations */
+  content: {
+    en: string;
+    es: string;
+  };
 };
 
 export type Lead = {

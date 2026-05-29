@@ -1,14 +1,28 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useMemo, useState, useRef, useEffect } from "react";
-import { ArrowRight, Bot, CheckCircle2, Download, Globe2, MessageCircle, Send, ShieldCheck, UserRound, Users, X } from "lucide-react";
-import { faqs, getAnswer, ui } from "@/lib/content";
+import { ArrowRight, Bot, CheckCircle2, Download, Globe2, MessageCircle, Send, ShieldCheck, Users, X } from "lucide-react";
+import { faqs, getAnswer, ui, systemMessages, translateUserMessage } from "@/lib/content";
 import { addLead, readLeads, toCsv } from "@/lib/storage";
 import { Language, Message, Lead } from "@/lib/types";
+import MessageBubble from "./MessageBubble";
+import FeatureItem from "./FeatureItem";
+import { generateId, validateLeadForm } from "@/lib/utils";
 
 function id() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
   return Math.random().toString(36).slice(2);
+}
+
+function createMessage(role: "assistant" | "user", textEn: string, textEs: string): Message {
+  return {
+    id: id(),
+    role,
+    content: {
+      en: textEn,
+      es: textEs
+    }
+  };
 }
 
 export default function ChatDemo() {
@@ -16,21 +30,23 @@ export default function ChatDemo() {
   const [input, setInput] = useState("");
   const [lead, setLead] = useState({ name: "", email: "", interest: "" });
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "initial",
-      role: "assistant",
-      text: "Welcome. I can help with admissions, programs, tuition, and contact questions.",
-    },
+    createMessage("assistant", systemMessages.welcome.en, systemMessages.welcome.es)
   ]);
   const [showLeads, setShowLeads] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Load leads from storage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedLeads = readLeads();
-      setLeads(storedLeads);
+      try {
+        const storedLeads = readLeads();
+        setLeads(storedLeads);
+      } catch (error) {
+        console.error("Failed to load leads:", error);
+        setMessages(prev => [...prev, 
+          createMessage("assistant", systemMessages.loadError.en, systemMessages.loadError.es)
+        ]);
+      }
     }
   }, []);
 
@@ -45,83 +61,129 @@ export default function ChatDemo() {
     const question = value.trim();
     if (!question) return;
 
-    setMessages((current) => [
-      ...current,
-      { id: id(), role: "user", text: question },
-      { id: id(), role: "assistant", text: getAnswer(question, language) },
-    ]);
+    const userTranslation = translateUserMessage(question, language);
+    const userMessage = createMessage("user", userTranslation.en, userTranslation.es);
+    
+    const assistantResponse = getAnswer(question, language);
+    const assistantMessage = createMessage(
+      "assistant", 
+      assistantResponse,
+      getAnswer(question, "es")
+    );
+
+    setMessages((current) => [...current, userMessage, assistantMessage]);
     setInput("");
   }
 
   function submitLead(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!lead.name.trim() || !lead.email.trim()) return;
+    
+    const validation = validateLeadForm(lead.name, lead.email);
+    
+    if (!validation.isValid) {
+      setMessages((current) => [...current, 
+        createMessage("assistant", systemMessages.validationError.en, systemMessages.validationError.es)
+      ]);
+      return;
+    }
 
-    const newLead = {
-      id: id(),
-      name: lead.name.trim(),
-      email: lead.email.trim(),
-      interest: lead.interest.trim() || "General inquiry",
-      language,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const newLead: Lead = {
+        id: generateId(),
+        name: lead.name.trim(),
+        email: lead.email.trim(),
+        interest: lead.interest.trim() || (language === "en" ? "General inquiry" : "Consulta general"),
+        language,
+        createdAt: new Date().toISOString(),
+      };
 
-    addLead(newLead);
-    setLeads(prev => [newLead, ...prev]);
-    setLead({ name: "", email: "", interest: "" });
-    setMessages((current) => [...current, { id: id(), role: "assistant", text: text.saved }]);
+      addLead(newLead);
+      setLeads(prev => [newLead, ...prev]);
+      setLead({ name: "", email: "", interest: "" });
+      
+      setMessages((current) => [...current, 
+        createMessage("assistant", ui.en.saved, ui.es.saved)
+      ]);
+    } catch (error) {
+      console.error("Failed to save lead:", error);
+      setMessages((current) => [...current, 
+        createMessage("assistant", systemMessages.saveError.en, systemMessages.saveError.es)
+      ]);
+    }
   }
 
   function exportToCsv() {
     if (leads.length === 0) {
-      setMessages((current) => [...current, { 
-        id: id(), 
-        role: "assistant", 
-        text: language === "en" 
-          ? "No leads to export yet. Submit a lead first." 
-          : "No hay contactos para exportar. Envíe un contacto primero."
-      }]);
+      setMessages((current) => [...current, 
+        createMessage("assistant", systemMessages.noLeadsToExport.en, systemMessages.noLeadsToExport.es)
+      ]);
       return;
     }
 
-    const csv = toCsv(leads);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `kingsway-leads-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const csv = toCsv(leads);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `kingsway-leads-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-    setMessages((current) => [...current, { 
-      id: id(), 
-      role: "assistant", 
-      text: language === "en" 
-        ? `Exported ${leads.length} leads to CSV file.` 
-        : `Exportados ${leads.length} contactos a archivo CSV.`
-    }]);
+      const exportMsg = systemMessages.exportedLeads(leads.length);
+      setMessages((current) => [...current, 
+        createMessage("assistant", exportMsg.en, exportMsg.es)
+      ]);
+    } catch (error) {
+      console.error("Failed to export CSV:", error);
+      setMessages((current) => [...current, 
+        createMessage("assistant", systemMessages.exportError.en, systemMessages.exportError.es)
+      ]);
+    }
   }
 
   function clearChat() {
     setMessages([
-      {
-        id: "initial",
-        role: "assistant",
-        text: "Welcome. I can help with admissions, programs, tuition, and contact questions.",
-      },
+      createMessage("assistant", systemMessages.welcome.en, systemMessages.welcome.es)
     ]);
   }
 
-  // Scroll to bottom when messages change
+  const featureItems = useMemo(() => {
+    const baseItems = [
+      { 
+        label: language === "en" ? "Bilingual FAQ" : "FAQ Bilingüe", 
+        description: language === "en" 
+          ? "Auto-answers common questions" 
+          : "Responde preguntas comunes",
+        icon: <CheckCircle2 className="mb-3 text-cyan-400" size={20} />,
+        onClick: () => {}
+      },
+      { 
+        label: language === "en" ? "Lead Capture" : "Captura de Contactos", 
+        description: language === "en" 
+          ? `Save inquiries for follow-up (${leads.length} captured)` 
+          : `Guarda consultas para seguimiento (${leads.length} capturados)`,
+        icon: <Users className="mb-3 text-emerald-400" size={20} />,
+        onClick: () => setShowLeads(true)
+      },
+      { 
+        label: language === "en" ? "CSV Export" : "Exportar CSV", 
+        description: language === "en" 
+          ? "Download data as spreadsheet" 
+          : "Descarga datos como hoja de cálculo",
+        icon: <Download className="mb-3 text-amber-400" size={20} />,
+        onClick: exportToCsv
+      }
+    ];
+    return baseItems;
+  }, [language, leads.length]);
+
   useEffect(() => {
     if (!chatContainerRef.current) return;
     
     const container = chatContainerRef.current;
-    
-    // Always scroll to bottom when new messages are added
-    // This ensures chat stays readable as messages accumulate
     const scrollTimer = setTimeout(() => {
       container.scrollTop = container.scrollHeight;
     }, 50);
@@ -164,75 +226,21 @@ export default function ChatDemo() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            {language === "en" 
-              ? [
-                  { 
-                    label: "Bilingual FAQ", 
-                    description: "Auto-answers common questions",
-                    icon: <CheckCircle2 className="mb-3 text-cyan-400" size={20} />,
-                    onClick: () => {}
-                  },
-                  { 
-                    label: "Lead Capture", 
-                    description: `Save inquiries for follow-up (${leads.length} captured)`,
-                    icon: <Users className="mb-3 text-emerald-400" size={20} />,
-                    onClick: () => setShowLeads(true)
-                  },
-                  { 
-                    label: "CSV Export", 
-                    description: "Download data as spreadsheet",
-                    icon: <Download className="mb-3 text-amber-400" size={20} />,
-                    onClick: exportToCsv
-                  }
-                ].map((item) => (
-                  <button 
-                    key={item.label} 
-                    onClick={item.onClick}
-                    className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm text-left transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-sm active:scale-95"
-                  >
-                    {item.icon}
-                    <span className="font-medium block">{item.label}</span>
-                    <span className="text-xs text-slate-400 mt-1 block">{item.description}</span>
-                  </button>
-                ))
-              : [
-                  { 
-                    label: "FAQ Bilingüe", 
-                    description: "Responde preguntas comunes",
-                    icon: <CheckCircle2 className="mb-3 text-cyan-400" size={20} />,
-                    onClick: () => {}
-                  },
-                  { 
-                    label: "Captura de Contactos", 
-                    description: `Guarda consultas para seguimiento (${leads.length} capturados)`,
-                    icon: <Users className="mb-3 text-emerald-400" size={20} />,
-                    onClick: () => setShowLeads(true)
-                  },
-                  { 
-                    label: "Exportar CSV", 
-                    description: "Descarga datos como hoja de cálculo",
-                    icon: <Download className="mb-3 text-amber-400" size={20} />,
-                    onClick: exportToCsv
-                  }
-                ].map((item) => (
-                  <button 
-                    key={item.label} 
-                    onClick={item.onClick}
-                    className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm text-left transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-sm active:scale-95"
-                  >
-                    {item.icon}
-                    <span className="font-medium block">{item.label}</span>
-                    <span className="text-xs text-slate-400 mt-1 block">{item.description}</span>
-                  </button>
-                ))
-            }
+            {featureItems.map((item) => (
+              <FeatureItem
+                key={item.label}
+                label={item.label}
+                description={item.description}
+                icon={item.icon}
+                onClick={item.onClick}
+              />
+            ))}
           </div>
         </div>
 
         <div className="rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-5 shadow-2xl shadow-blue-900/10 backdrop-blur-sm h-[90vh] max-h-[800px]">
           <div className="grid gap-5 rounded-2xl bg-gradient-to-br from-slate-50 to-white p-5 text-slate-900 h-full md:grid-cols-[1.25fr_0.75fr]">
             <section className="flex flex-col rounded-xl bg-white shadow-lg border border-slate-200/50 h-full">
-              {/* HEADER - FIXED */}
               <header className="flex items-center justify-between border-b border-slate-200/50 bg-gradient-to-r from-blue-50/50 to-white p-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-sm">
@@ -251,7 +259,6 @@ export default function ChatDemo() {
                   <button
                     onClick={clearChat}
                     className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:border-red-400 hover:bg-red-50 hover:text-red-700 hover:shadow-sm"
-                    title={text.clearChat}
                   >
                     <span className="flex items-center gap-1">
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -266,39 +273,22 @@ export default function ChatDemo() {
                 </div>
               </header>
 
-              {/* MESSAGE AREA - SCROLLS HERE */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 <div 
                   ref={chatContainerRef}
                   className="h-full overflow-y-auto p-4 space-y-3 chat-scroll-area"
                 >
                   {messages.map((message, index) => (
-                    <div 
-                      key={message.id} 
-                      className={`flex gap-2.5 chat-message-enter ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      {message.role === "assistant" && (
-                        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-sm">
-                          <Bot size={14} />
-                        </div>
-                      )}
-
-                      <div className={`max-w-[82%] rounded-xl px-4 py-3 text-sm leading-relaxed shadow-sm ${message.role === "user" ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white" : "bg-gradient-to-r from-slate-50 to-white text-slate-800 border border-slate-200/50"}`}>
-                        {message.text}
-                      </div>
-
-                      {message.role === "user" && (
-                        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 shadow-sm">
-                          <UserRound size={14} />
-                        </div>
-                      )}
-                    </div>
+                    <MessageBubble
+                      key={message.id}
+                      message={message}
+                      index={index}
+                      language={language}
+                    />
                   ))}
                 </div>
               </div>
 
-              {/* QUICK QUESTIONS & INPUT - FIXED */}
               <div className="border-t border-slate-200/50 bg-gradient-to-t from-white to-slate-50/50 p-4 flex-shrink-0">
                 <div className="mb-3">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{text.quickQuestions}</p>
@@ -337,7 +327,6 @@ export default function ChatDemo() {
                   </div>
                   <button 
                     className="grid h-12 w-12 place-items-center rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-sm" 
-                    aria-label="Send"
                   >
                     <Send size={18} />
                   </button>
@@ -399,7 +388,6 @@ export default function ChatDemo() {
         </div>
       </section>
 
-      {/* Leads Modal */}
       {showLeads && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700/50 shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">

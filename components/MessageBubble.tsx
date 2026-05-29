@@ -1,19 +1,22 @@
-import { Bot, UserRound } from "lucide-react";
-import { Message } from "@/lib/types";
+﻿import { Bot, UserRound } from "lucide-react";
+import { Message, Language } from "@/lib/types";
 
 interface MessageBubbleProps {
   message: Message;
   index: number;
+  language: Language;
 }
 
 /**
  * MessageBubble component for displaying chat messages
  * 
- * @param message - The message object containing id, role, and text
+ * @param message - The message object containing id, role, and content with translations
  * @param index - The index of the message for animation delay
+ * @param language - The current language to display the message in
  */
-export default function MessageBubble({ message, index }: MessageBubbleProps) {
+export default function MessageBubble({ message, index, language }: MessageBubbleProps) {
   const isUser = message.role === "user";
+  const messageText = message.content[language];
   
   return (
     <div 
@@ -39,7 +42,7 @@ export default function MessageBubble({ message, index }: MessageBubbleProps) {
         }`}
         aria-live="polite"
       >
-        {message.text}
+        {messageText}
       </div>
 
       {isUser && (

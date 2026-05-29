@@ -1,4 +1,4 @@
-import { Language, UI } from "./types";
+﻿import { Language, UI } from "./types";
 
 export const ui: Record<Language, UI> = {
   en: {
@@ -95,4 +95,78 @@ export function getAnswer(question: string, language: Language): string {
   return language === "en"
     ? "I can help with admissions, programs, tuition, and contact. Try one of the quick questions below or submit your information for follow-up."
     : "Puedo ayudar con admisiones, programas, matrícula y contacto. Pruebe una pregunta rápida o envíe sus datos.";
+}
+
+/**
+ * System messages that need to be translated when language changes
+ */
+export const systemMessages = {
+  welcome: {
+    en: "Welcome. I can help with admissions, programs, tuition, and contact questions.",
+    es: "Bienvenido. Puedo ayudar con preguntas sobre admisiones, programas, matrícula y contacto."
+  },
+  noLeadsToExport: {
+    en: "No leads to export yet. Submit a lead first.",
+    es: "No hay contactos para exportar. Envíe un contacto primero."
+  },
+  exportedLeads: (count: number) => ({
+    en: `Exported ${count} leads to CSV file.`,
+    es: `Exportados ${count} contactos a archivo CSV.`
+  }),
+  loadError: {
+    en: "Unable to load saved leads. Please refresh the page.",
+    es: "No se pudieron cargar los contactos guardados. Por favor, recargue la página."
+  },
+  saveError: {
+    en: "Failed to save your inquiry. Please try again.",
+    es: "No se pudo guardar su consulta. Por favor, intente nuevamente."
+  },
+  exportError: {
+    en: "Failed to export CSV. Please try again.",
+    es: "No se pudo exportar el CSV. Por favor, intente nuevamente."
+  },
+  validationError: {
+    en: "Please check the form. Name and valid email are required.",
+    es: "Por favor revise el formulario. Se requieren nombre y correo electrónico válido."
+  }
+};
+
+/**
+ * Simple translation for common user phrases
+ * This is a basic implementation for the demo
+ */
+export function translateUserMessage(text: string, currentLang: Language): { en: string; es: string } {
+  const lowerText = text.toLowerCase();
+  
+  // Check if it's one of the FAQ questions
+  for (const faq of faqs) {
+    if (lowerText === faq.question.en.toLowerCase()) {
+      return { en: faq.question.en, es: faq.question.es };
+    }
+    if (lowerText === faq.question.es.toLowerCase()) {
+      return { en: faq.question.en, es: faq.question.es };
+    }
+  }
+  
+  // Simple word translations
+  const translations: Record<string, { en: string; es: string }> = {
+    "hello": { en: "hello", es: "hola" },
+    "hi": { en: "hi", es: "hola" },
+    "thanks": { en: "thanks", es: "gracias" },
+    "thank you": { en: "thank you", es: "gracias" },
+    "ok": { en: "ok", es: "ok" },
+    "yes": { en: "yes", es: "sí" },
+    "no": { en: "no", es: "no" },
+  };
+  
+  // Check for exact matches
+  for (const [key, translation] of Object.entries(translations)) {
+    if (lowerText === key.toLowerCase()) {
+      return translation;
+    }
+  }
+  
+  // If no translation found, use the same text for both languages
+  // In a real app, you would use a proper translation API
+  return { en: text, es: text };
 }
